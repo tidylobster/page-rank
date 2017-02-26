@@ -3,10 +3,9 @@ from bs4 import BeautifulSoup
 import urllib.parse as parse
 import numpy as np
 
-# main_link = "https://en.wikipedia.org/wiki/Government_of_the_United_Kingdom"
-main_link = "http://rt.rbc.ru/"
+main_link = "https://medium.com/"
 # main_link = "http://kpfu.ru/"
-searched_netloc = re.compile(r"rt\.rbc\.ru")
+searched_netloc = re.compile(r"medium\.com")
 # searched_netloc = re.compile(r"\b(?!javascript:).*")
 
 
@@ -73,6 +72,8 @@ st_time = time.time()
 links = collect(main_link, 10)
 matrix = np.zeros((len(links), len(links)))
 refill(links, matrix)
+
+np.savetxt('matrix.csv', matrix, delimiter=',')
 
 print("--- %s seconds ---" % (time.time() - st_time))
 print(links)
