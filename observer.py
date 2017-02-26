@@ -3,20 +3,24 @@ from bs4 import BeautifulSoup
 import urllib.parse as parse
 import numpy as np
 
-main_link = "https://en.wikipedia.org/wiki/Government_of_the_United_Kingdom"
+# main_link = "https://en.wikipedia.org/wiki/Government_of_the_United_Kingdom"
+main_link = "http://rt.rbc.ru/"
 # main_link = "http://kpfu.ru/"
-searched_netloc = re.compile(r"en\.wikipedia\.org")
+searched_netloc = re.compile(r"rt\.rbc\.ru")
 # searched_netloc = re.compile(r"\b(?!javascript:).*")
 
 
 def collect(link, amount=100):
     i = 0
-    lst = [link]
-    while amount > len(lst) != i:
-        array = reformat(scan(lst[i]))
-        lst.extend(array)
+    queue = [link]
+    links = set()
+    links.add(link)
+    while amount > len(links) != i:
+        array = reformat(scan(queue[i]))
+        queue.extend(array)
+        links.update(array)
         i += 1
-    return lst[:amount]
+    return list(links)[:amount]
 
 
 def scan(link):
@@ -60,17 +64,18 @@ def refill(array, matrix):
                 matrix[i][j] = 1
                 amount += 1
         if amount == 0: amount = 1
-        # matrix[i] = np.around(np.divide(matrix[i], amount), 3)
         matrix[i] = np.divide(matrix[i], amount)
+        matrix[i] = np.around(np.divide(matrix[i], amount), 3)
 
 # time measurement
 st_time = time.time()
 
-links = collect(main_link, 15)
+links = collect(main_link, 10)
 matrix = np.zeros((len(links), len(links)))
 refill(links, matrix)
 
 print("--- %s seconds ---" % (time.time() - st_time))
+print(links)
 print(matrix)
 
 
