@@ -1,1 +1,1 @@
-This module is the prototype of Google's PageRank system.
+This module is a prototype of Google's PageRank system.
