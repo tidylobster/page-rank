@@ -1,11 +1,12 @@
-import requests, re, time
+import requests, re, time, pickle
 from bs4 import BeautifulSoup
+from requests.exceptions import ConnectionError
 import urllib.parse as parse
 import numpy as np
 
 main_link = "https://medium.com/"
-# main_link = "http://kpfu.ru/"
 searched_netloc = re.compile(r"medium\.com")
+# main_link = "http://kpfu.ru/"
 # searched_netloc = re.compile(r"\b(?!javascript:).*")
 
 
@@ -28,10 +29,14 @@ def scan(link):
     :param link:
     :return:
     """
-    r = requests.get(link)
-    if r.status_code == 200:
-        soup = BeautifulSoup(r.content, "html.parser")
-        return soup.find_all("a")
+    try:
+        r = requests.get(link)
+        if r.status_code == 200:
+            soup = BeautifulSoup(r.content, "html.parser")
+            return soup.find_all("a")
+    except ConnectionError as e:
+        print("Connection error occurred while trying to reach the page")
+        print(e)
     return []
 
 
@@ -56,27 +61,27 @@ def reformat(array):
 
 def refill(array, matrix):
     for i in range(len(array)):
+        # we take i-link from our array and then find all outcome links from that page
         links = reformat(scan(array[i]))
-        amount = 0
         for j in range(len(array)):
+            # if any of found links is referring to an origin page, then we refill an i-value of the table
             if array[j] in links:
                 matrix[i][j] = 1
-                amount += 1
-        if amount == 0: amount = 1
-        matrix[i] = np.divide(matrix[i], amount)
-        matrix[i] = np.around(np.divide(matrix[i], amount), 3)
-
-# time measurement
-st_time = time.time()
-
-links = collect(main_link, 10)
-matrix = np.zeros((len(links), len(links)))
-refill(links, matrix)
-
-np.savetxt('matrix.csv', matrix, delimiter=',')
-
-print("--- %s seconds ---" % (time.time() - st_time))
-print(links)
-print(matrix)
 
 
+if __name__ == "__main__":
+    # time measurement
+    st_time = time.time()
+
+    links = collect(main_link, 100)
+    matrix = np.zeros((len(links), len(links)))
+    refill(links, matrix)
+
+    # dumping data
+    np.savetxt('matrix.csv', matrix, delimiter=',')
+    with open('legend.txt', 'wb') as fp:
+        pickle.dump(links, fp)
+
+    print("--- %s seconds ---" % (time.time() - st_time))
+    print(links)
+    print(matrix)

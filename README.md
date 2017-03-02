@@ -1,1 +1,1 @@
-"# page-rank" 
+This module is the prototype of Google's PageRank system.
