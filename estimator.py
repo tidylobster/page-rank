@@ -9,7 +9,7 @@ def estimate(ranks, siblings, matrix):
     s = 0
     for i in range(len(siblings)):
         if siblings[i] != 0:
-            tmp = matrix[:,i]
+            tmp = matrix[:, i]
             ii = np.where(tmp == 1)
             s += ranks[i] / len(ii[0])
     return (1 - d)/len(ranks) + d * s
@@ -47,10 +47,6 @@ if __name__ == "__main__":
     print()
     print(np.round(estimated, pcs))
     print()
-    print(estimated.index(max(estimated)), legend[estimated.index(max(estimated))])
+    print(legend[estimated.index(max(estimated))])
     print(max(estimated))
     print()
-
-    # d = dict(zip(estimated, legend))
-    # for key in reversed(sorted(d.keys())):
-    #     print(key, d.get(key))
