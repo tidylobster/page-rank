@@ -1,13 +1,12 @@
+import numpy as np
+import urllib.parse as parse
 import requests, re, time, pickle
 from bs4 import BeautifulSoup
 from requests.exceptions import ConnectionError
-import urllib.parse as parse
-import numpy as np
+from page_rank.compress import SparseMatrix
 
 main_link = "https://medium.com/"
 searched_netloc = re.compile(r"medium\.com")
-# main_link = "http://kpfu.ru/"
-# searched_netloc = re.compile(r"\b(?!javascript:).*")
 
 
 def collect(link, amount=100):
@@ -19,6 +18,7 @@ def collect(link, amount=100):
         array = reformat(scan(queue[i]))
         queue.extend(array)
         links.update(array)
+        print(len(links))
         i += 1
     return list(links)[:amount]
 
@@ -26,8 +26,6 @@ def collect(link, amount=100):
 def scan(link):
     """
     Scans one page for all links
-    :param link:
-    :return:
     """
     try:
         r = requests.get(link)
@@ -43,10 +41,8 @@ def scan(link):
 def reformat(array):
     """
     Reformat all collected links from array to normal form
-    :param array:
-    :return:
     """
-    global searched_netloc
+    global searched_domain
     response = []
     for tag in array:
         link = tag.get("href", None)
@@ -61,27 +57,28 @@ def reformat(array):
 
 def refill(array, matrix):
     for i in range(len(array)):
-        # we take i-link from our array and then find all outcome links from that page
+        print(i, array[i])
         links = reformat(scan(array[i]))
         for j in range(len(array)):
-            # if any of found links is referring to an origin page, then we refill an i-value of the table
             if array[j] in links:
                 matrix[i][j] = 1
 
 
 if __name__ == "__main__":
-    # time measurement
     st_time = time.time()
 
     links = collect(main_link, 100)
     matrix = np.zeros((len(links), len(links)))
     refill(links, matrix)
 
-    # dumping data
-    np.savetxt('matrix.csv', matrix, delimiter=',')
-    with open('legend.txt', 'wb') as fp:
+    np.savetxt('data\\matrix.csv', matrix, delimiter=',')
+    smatrix = SparseMatrix(matrix)
+
+    with open('data\\matrix.txt', 'wb') as fp:
+        pickle.dump(smatrix, fp)
+    with open('data\\legend.txt', 'wb') as fp:
         pickle.dump(links, fp)
 
-    print("--- %s seconds ---" % (time.time() - st_time))
+    print("--- %s seconds ---\n" % (time.time() - st_time))
     print(links)
-    print(matrix)
+    print(smatrix)
